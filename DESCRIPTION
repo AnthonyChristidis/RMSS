@@ -1,0 +1,23 @@
+Package: RMSS
+Type: Package
+Title: Robust Multi-Model Subset Selection
+Version: 1.0.0
+Date: 2023-06-06
+Authors@R: c(person("Anthony", "Christidis", role=c("aut", "cre"), email = "anthony.christidis@stat.ubc.ca"),
+             person("Gabriela", "Cohen-Freue", role=c("aut"), email = "gcohen@stat.ubc.ca"))
+Maintainer: Anthony Christidis <anthony.christidis@stat.ubc.ca>
+Description: Functions to perform robust multi-model subset selection. The robust ensembles are generated
+             by minimizing the sum of the least trimmed square loss of the models in the ensembles under 
+             constraints  for the size of the models and the sharing of the predictors. The tuning parameters
+             for the robustness, sparsity and diversity of the robust ensemble are selected by cross-validation.
+License: GPL (>= 2)
+Encoding: UTF-8
+Biarch: true
+Imports: Rcpp (>= 1.0.9), 
+         robStepSplitReg,
+         cellWise
+Suggests: testthat,
+          mvnfast
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 7.2.3
+NeedsCompilation: yes
