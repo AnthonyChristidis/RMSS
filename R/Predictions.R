@@ -103,6 +103,9 @@ predict.RMSS <- function(object, newx,
                          dynamic = FALSE,
                          ...){
   
+  DataCheckPredict(object, newx,
+                   h_ind, t_ind, u_ind)
+  
   if(!dynamic){
     
     ensemble.coef <- coef(object, h_ind, t_ind, u_ind, group_index = group_index)
@@ -247,6 +250,9 @@ predict.cv.RMSS <- function(object, newx,
                             group_index = NULL, 
                             dynamic = FALSE,
                             ...){
+  
+  DataCheckPredict(object, newx,
+                   h_ind, t_ind, u_ind)
   
   if(is.null(h_ind))
     h_ind <- object$h_opt

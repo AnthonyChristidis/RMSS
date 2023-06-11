@@ -102,6 +102,10 @@ coef.RMSS <- function(object,
                       group_index = NULL, 
                       ...){
   
+  DataCheckCoef(object,
+                h_ind, t_ind, u_ind, 
+                individual_models)
+  
   if(individual_models){
     
     if(is.null(group_index))
@@ -239,6 +243,10 @@ coef.cv.RMSS <- function(object,
                          individual_models = FALSE,
                          group_index = NULL, 
                          ...){
+  
+  DataCheckCoef(object,
+                h_ind, t_ind, u_ind, 
+                individual_models)
   
   if(is.null(h_ind))
     h_ind <- object$h_opt

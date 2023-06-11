@@ -121,6 +121,19 @@ cv.RMSS <- function(x, y,
                     gamma = 1, 
                     n_threads = 1){
   
+  # Check input data
+  DataCheckCV(x, y,
+              n_models,
+              h_grid, t_grid, u_grid,
+              tolerance,
+              max_iter,
+              neighborhood_search,
+              neighborhood_search_tolerance,
+              n_folds,
+              alpha,
+              gamma, 
+              n_threads)
+  
   # Shuffle the data
   n <- nrow(x)
   p <- ncol(x)

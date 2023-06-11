@@ -110,6 +110,15 @@ RMSS <- function(x, y,
                  neighborhood_search = FALSE,
                  neighborhood_search_tolerance = 1e-1){
   
+  # Check input data
+  DataCheck(x, y,
+            n_models,
+            h_grid, t_grid, u_grid,
+            tolerance,
+            max_iter,
+            neighborhood_search,
+            neighborhood_search_tolerance)
+  
   # Shuffle the data
   n <- nrow(x)
   p <- ncol(x)

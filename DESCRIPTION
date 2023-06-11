@@ -2,7 +2,7 @@ Package: RMSS
 Type: Package
 Title: Robust Multi-Model Subset Selection
 Version: 1.0.0
-Date: 2023-06-08
+Date: 2023-06-10
 Authors@R: c(person("Anthony", "Christidis", role=c("aut", "cre"), email = "anthony.christidis@stat.ubc.ca"),
              person("Gabriela", "Cohen-Freue", role=c("aut"), email = "gcohen@stat.ubc.ca"))
 Maintainer: Anthony Christidis <anthony.christidis@stat.ubc.ca>
