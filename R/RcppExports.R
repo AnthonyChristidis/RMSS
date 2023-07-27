@@ -5,7 +5,7 @@ RInterface <- function(x, y, n_models, h, t, u, tolerance, max_iter, initial_spl
     .Call('_RMSS_RInterface', PACKAGE = 'RMSS', x, y, n_models, h, t, u, tolerance, max_iter, initial_split, neighborhood_search, neighborhood_search_tolerance)
 }
 
-RInterfaceCV <- function(x, y, n_models, h, t, u, tolerance, max_iter, initial_split_array, initial_split, neighborhood_search, neighborhood_search_tolerance, n_folds, alpha, gamma, n_threads) {
-    .Call('_RMSS_RInterfaceCV', PACKAGE = 'RMSS', x, y, n_models, h, t, u, tolerance, max_iter, initial_split_array, initial_split, neighborhood_search, neighborhood_search_tolerance, n_folds, alpha, gamma, n_threads)
+RInterfaceCV <- function(x, y, n_models, h, t, u, tolerance, max_iter, initial_split_array, initial_split, neighborhood_search, neighborhood_search_tolerance, n_folds, cv_criterion, alpha, gamma, n_threads) {
+    .Call('_RMSS_RInterfaceCV', PACKAGE = 'RMSS', x, y, n_models, h, t, u, tolerance, max_iter, initial_split_array, initial_split, neighborhood_search, neighborhood_search_tolerance, n_folds, cv_criterion, alpha, gamma, n_threads)
 }
 

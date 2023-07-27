@@ -199,33 +199,41 @@ std::vector<std::vector<std::vector<arma::vec>>> Generate3D_Prediction_Residuals
 }
 
 // Function to return 3D vector of CV error for each tuning parameter configuration
-std::vector<std::vector<std::vector<double>>> Generate3D_CV_Error(std::vector<std::vector<std::vector<arma::vec>>> prediction_residuals,
-                                                                  arma::uvec& h, arma::uvec& t, arma::uvec& u,
-                                                                  arma::uword& n, arma::uword& n_trim) {
+std::vector<std::vector<std::vector<arma::vec>>> Generate3D_CV_Error(std::vector<std::vector<std::vector<arma::vec>>> prediction_residuals,
+                                                                     arma::uvec& h, arma::uvec& t, arma::uvec& u,
+                                                                     arma::uword& n, 
+                                                                     arma::uword& cv_criterion,
+                                                                     arma::uword& n_trim) {
   
   // Vectors for trimmed prediction residuals
   arma::vec trimmed_residuals = arma::vec(n);
   arma::uvec sort_order_residuals = arma::uvec(n);
   
   // Creation of 3D vector for ensemble losses
-  std::vector<std::vector<std::vector<double>>> CVerror3D;
+  std::vector<std::vector<std::vector<arma::vec>>> CVerror3D;
   
   // Allocation of the ensemble losses
   for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
     
     // 2D vector for a fixed trimming value
-    std::vector<std::vector<double>> CVerror3D_h;
+    std::vector<std::vector<arma::vec>> CVerror3D_h;
     
     for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
       
       // 1D vector for a fixed sparsity value
-      std::vector<double> CVerror3D_t;
+      std::vector<arma::vec> CVerror3D_t;
       
       for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
         
-        trimmed_residuals = prediction_residuals[h_ind][t_ind][u_ind];
-        TrimPredictionResiduals(trimmed_residuals, sort_order_residuals, n_trim);
-        CVerror3D_t.push_back(arma::mean(trimmed_residuals));
+        if(cv_criterion){
+          
+          trimmed_residuals = prediction_residuals[h_ind][t_ind][u_ind];
+          TrimPredictionResiduals(trimmed_residuals, sort_order_residuals, n_trim);
+          CVerror3D_t.push_back(trimmed_residuals);
+        } 
+        else{
+          CVerror3D_t.push_back(prediction_residuals[h_ind][t_ind][u_ind]);
+        }
       }
       
       // Adding the 1D vector to the 2D vector of ensembles for a fixed trimming value

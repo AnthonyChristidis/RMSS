@@ -33,8 +33,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // RInterfaceCV
-Rcpp::List RInterfaceCV(arma::mat& x, arma::vec& y, arma::uword& n_models, arma::uvec& h, arma::uvec& t, arma::uvec& u, double& tolerance, arma::uword& max_iter, Rcpp::NumericVector& initial_split_array, arma::umat& initial_split, arma::uword& neighborhood_search, double& neighborhood_search_tolerance, arma::uword& n_folds, double& alpha, double& gamma, arma::uword& n_threads);
-RcppExport SEXP _RMSS_RInterfaceCV(SEXP xSEXP, SEXP ySEXP, SEXP n_modelsSEXP, SEXP hSEXP, SEXP tSEXP, SEXP uSEXP, SEXP toleranceSEXP, SEXP max_iterSEXP, SEXP initial_split_arraySEXP, SEXP initial_splitSEXP, SEXP neighborhood_searchSEXP, SEXP neighborhood_search_toleranceSEXP, SEXP n_foldsSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP n_threadsSEXP) {
+Rcpp::List RInterfaceCV(arma::mat& x, arma::vec& y, arma::uword& n_models, arma::uvec& h, arma::uvec& t, arma::uvec& u, double& tolerance, arma::uword& max_iter, Rcpp::NumericVector& initial_split_array, arma::umat& initial_split, arma::uword& neighborhood_search, double& neighborhood_search_tolerance, arma::uword& n_folds, arma::uword& cv_criterion, double& alpha, double& gamma, arma::uword& n_threads);
+RcppExport SEXP _RMSS_RInterfaceCV(SEXP xSEXP, SEXP ySEXP, SEXP n_modelsSEXP, SEXP hSEXP, SEXP tSEXP, SEXP uSEXP, SEXP toleranceSEXP, SEXP max_iterSEXP, SEXP initial_split_arraySEXP, SEXP initial_splitSEXP, SEXP neighborhood_searchSEXP, SEXP neighborhood_search_toleranceSEXP, SEXP n_foldsSEXP, SEXP cv_criterionSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP n_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,17 +51,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uword& >::type neighborhood_search(neighborhood_searchSEXP);
     Rcpp::traits::input_parameter< double& >::type neighborhood_search_tolerance(neighborhood_search_toleranceSEXP);
     Rcpp::traits::input_parameter< arma::uword& >::type n_folds(n_foldsSEXP);
+    Rcpp::traits::input_parameter< arma::uword& >::type cv_criterion(cv_criterionSEXP);
     Rcpp::traits::input_parameter< double& >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double& >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< arma::uword& >::type n_threads(n_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(RInterfaceCV(x, y, n_models, h, t, u, tolerance, max_iter, initial_split_array, initial_split, neighborhood_search, neighborhood_search_tolerance, n_folds, alpha, gamma, n_threads));
+    rcpp_result_gen = Rcpp::wrap(RInterfaceCV(x, y, n_models, h, t, u, tolerance, max_iter, initial_split_array, initial_split, neighborhood_search, neighborhood_search_tolerance, n_folds, cv_criterion, alpha, gamma, n_threads));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RMSS_RInterface", (DL_FUNC) &_RMSS_RInterface, 11},
-    {"_RMSS_RInterfaceCV", (DL_FUNC) &_RMSS_RInterfaceCV, 16},
+    {"_RMSS_RInterfaceCV", (DL_FUNC) &_RMSS_RInterfaceCV, 17},
     {NULL, NULL, 0}
 };
 

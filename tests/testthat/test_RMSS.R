@@ -68,6 +68,7 @@ test_that("Error in the RMSS function.", {
   # cv.rmss_fit <- cv.RMSS(x = x_train, y = y_train,
   #                        n_models = 3,
   #                        h_grid = c(35), t_grid = c(6, 8, 10), u_grid = c(1:3),
+  #                        initial_estimator = "srlars",
   #                        tolerance = 1e-1,
   #                        max_iter = 1e3,
   #                        neighborhood_search = FALSE,

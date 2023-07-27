@@ -11,10 +11,12 @@ cv.RMSS(
   h_grid,
   t_grid,
   u_grid,
+  initial_estimator = c("srlars", "robStepSplitReg")[1],
   tolerance = 0.1,
   max_iter = 1000,
   neighborhood_search = FALSE,
   neighborhood_search_tolerance = 0.1,
+  cv_criterion = c("tau", "trimmed")[1],
   n_folds = 5,
   alpha = 1/4,
   gamma = 1,
@@ -34,6 +36,8 @@ cv.RMSS(
 
 \item{u_grid}{Grid for diversity parameter.}
 
+\item{initial_estimator}{Method used for initial estimator. Must be one of "srlars" (default) or "robStepSplitReg".}
+
 \item{tolerance}{Tolerance level for convergence of PSBGD algorithm.}
 
 \item{max_iter}{Maximum number of iterations in PSBGD algorithm.}
@@ -41,6 +45,8 @@ cv.RMSS(
 \item{neighborhood_search}{Neighborhood search to improve solution. Default is FALSE.}
 
 \item{neighborhood_search_tolerance}{Tolerance parameter for neighborhood search. Default is 1e-1.}
+
+\item{cv_criterion}{Criterion to use for cross-validation procedure. Must be one of "tau" (default) or "trimmed".}
 
 \item{n_folds}{Number of folds for cross-validation procedure. Default is 5.}
 
@@ -116,6 +122,7 @@ for(cont_id in contamination_indices){
 rmss_fit <- cv.RMSS(x = x_train, y = y_train,
                     n_models = 3,
                     h_grid = c(35), t_grid = c(6, 8, 10), u_grid = c(1:3),
+                    initial_estimator = "srlars",
                     tolerance = 1e-1,
                     max_iter = 1e3,
                     neighborhood_search = FALSE,

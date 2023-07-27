@@ -29,6 +29,7 @@ Rcpp::List RInterfaceCV(arma::mat& x, arma::vec& y,
                         arma::uword& neighborhood_search,
                         double& neighborhood_search_tolerance,
                         arma::uword& n_folds,
+                        arma::uword& cv_criterion,
                         double& alpha,
                         double& gamma,
                         arma::uword& n_threads) {
@@ -156,7 +157,7 @@ Rcpp::List RInterfaceCV(arma::mat& x, arma::vec& y,
   
   // Creating list for output
   Rcpp::List output;
-  output["cv_error"] = Generate3D_CV_Error(prediction_residuals, h, t, u, n, n_trim);
+  output["prediction_residuals"] = Generate3D_CV_Error(prediction_residuals, h, t, u, n, cv_criterion, n_trim);
   output["active_samples"] = Generate3D_Active_Samples(ensembles, h, t, u, p, n_models);
   output["intercepts"] = Generate3D_Intercepts(ensembles, h, t, u, n_models);
   output["coef"] = Generate3D_Coefficients(ensembles, h, t, u, p, n_models);

@@ -39,8 +39,10 @@ std::vector<std::vector<std::vector<arma::vec>>> Generate3D_Prediction_Residuals
                                                                                  arma::uword& n);
 
 // Function to return 3D vector of CV error for each tuning parameter configuration
-std::vector<std::vector<std::vector<double>>> Generate3D_CV_Error(std::vector<std::vector<std::vector<arma::vec>>> prediction_residuals,
-                                                                  arma::uvec& h, arma::uvec& t, arma::uvec& u, 
-                                                                  arma::uword& n, arma::uword& n_trim);
+std::vector<std::vector<std::vector<arma::vec>>> Generate3D_CV_Error(std::vector<std::vector<std::vector<arma::vec>>> prediction_residuals,
+                                                                     arma::uvec& h, arma::uvec& t, arma::uvec& u, 
+                                                                     arma::uword& n, 
+                                                                     arma::uword& cv_criterion,
+                                                                     arma::uword& n_trim);
 
 #endif // Generate3D_hpp

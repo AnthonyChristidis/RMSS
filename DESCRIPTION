@@ -1,8 +1,8 @@
 Package: RMSS
 Type: Package
 Title: Robust Multi-Model Subset Selection
-Version: 1.0.0
-Date: 2023-06-10
+Version: 1.1.0
+Date: 2023-07-26
 Authors@R: c(person("Anthony", "Christidis", role=c("aut", "cre"), email = "anthony.christidis@stat.ubc.ca"),
              person("Gabriela", "Cohen-Freue", role=c("aut"), email = "gcohen@stat.ubc.ca"))
 Maintainer: Anthony Christidis <anthony.christidis@stat.ubc.ca>
@@ -15,8 +15,10 @@ License: GPL (>= 2)
 Encoding: UTF-8
 Biarch: true
 Imports: Rcpp (>= 1.0.9), 
+         srlars,
          robStepSplitReg,
-         cellWise
+         cellWise,
+         robustbase
 Suggests: testthat,
           mvnfast
 LinkingTo: Rcpp, RcppArmadillo

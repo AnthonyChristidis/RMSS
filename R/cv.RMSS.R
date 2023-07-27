@@ -9,11 +9,13 @@
 #' @param h_grid Grid for robustness parameter.
 #' @param t_grid Grid for sparsity parameter.
 #' @param u_grid Grid for diversity parameter.
+#' @param initial_estimator Method used for initial estimator. Must be one of "srlars" (default) or "robStepSplitReg".
 #' @param tolerance Tolerance level for convergence of PSBGD algorithm.
 #' @param max_iter Maximum number of iterations in PSBGD algorithm.
 #' @param neighborhood_search Neighborhood search to improve solution. Default is FALSE.
 #' @param neighborhood_search_tolerance Tolerance parameter for neighborhood search. Default is 1e-1.
 #' @param n_folds Number of folds for cross-validation procedure. Default is 5.
+#' @param cv_criterion Criterion to use for cross-validation procedure. Must be one of "tau" (default) or "trimmed".
 #' @param alpha Proportion of trimmed samples for cross-validation procedure. Default is 1/4.
 #' @param gamma Weight parameter for ensemble MSPE (gamma) and average MSPE of individual models (1 - gamma). Default is 1.
 #' @param n_threads Number of threads used by OpenMP for multithreading over the folds. Default is 1.
@@ -86,6 +88,7 @@
 #' rmss_fit <- cv.RMSS(x = x_train, y = y_train,
 #'                     n_models = 3,
 #'                     h_grid = c(35), t_grid = c(6, 8, 10), u_grid = c(1:3),
+#'                     initial_estimator = "srlars",
 #'                     tolerance = 1e-1,
 #'                     max_iter = 1e3,
 #'                     neighborhood_search = FALSE,
@@ -112,10 +115,12 @@
 cv.RMSS <- function(x, y,
                     n_models,
                     h_grid, t_grid, u_grid,
+                    initial_estimator = c("srlars", "robStepSplitReg")[1],
                     tolerance = 1e-1,
                     max_iter = 1e3,
                     neighborhood_search = FALSE,
                     neighborhood_search_tolerance = 1e-1,
+                    cv_criterion = c("tau", "trimmed")[1],
                     n_folds = 5,
                     alpha = 1/4,
                     gamma = 1, 
@@ -125,11 +130,13 @@ cv.RMSS <- function(x, y,
   DataCheckCV(x, y,
               n_models,
               h_grid, t_grid, u_grid,
+              initial_estimator,
               tolerance,
               max_iter,
               neighborhood_search,
               neighborhood_search_tolerance,
               n_folds,
+              cv_criterion,
               alpha,
               gamma, 
               n_threads)
@@ -142,12 +149,24 @@ cv.RMSS <- function(x, y,
   y <- y[random.permutation]
   
   # Initial split of predictors
-  initial_selections <- robStepSplitReg::robStepSplitReg(x, y, 
-                                                         n_models = n_models,
-                                                         model_saturation = "fixed",
-                                                         model_size = n - 1,
-                                                         robust = TRUE,
-                                                         compute_coef = FALSE)$selections
+  if(initial_estimator == "srlars"){
+    
+    initial_selections <- srlars::srlars(x, y,
+                                         n_models = n_models,
+                                         model_saturation = "fixed",
+                                         model_size = min(n - 1, floor(p/n_models)),
+                                         robust = TRUE,
+                                         compute_coef = FALSE)$selections
+    
+  } else if(initial_estimator == "robStepSplitReg"){
+    
+    initial_selections <- robStepSplitReg::robStepSplitReg(x, y, 
+                                                           n_models = n_models,
+                                                           model_saturation = "fixed",
+                                                           model_size = min(n - 1, floor(p/n_models)),
+                                                           robust = TRUE,
+                                                           compute_coef = FALSE)$selections
+  }
   initial_split <- matrix(0, nrow = p, ncol = n_models)
   for(model_id in 1:n_models)
     initial_split[initial_selections[[model_id]], model_id] <- 1
@@ -159,22 +178,44 @@ cv.RMSS <- function(x, y,
   initial_split_array <- array(dim = c(nrow(initial_split), ncol(initial_split), n_folds))
 
   # Filling arrays for data scaling and initial selections
-  for(fold in 1:n_folds){
+  if(initial_estimator == "srlars"){
     
-    # Initial split of predictors
-    initial_selections_fold <- robStepSplitReg::robStepSplitReg(x[cpp_folds[[fold]],], y[cpp_folds[[fold]]], 
-                                                                n_models = n_models,
-                                                                model_saturation = "fixed",
-                                                                model_size = length(cpp_folds[[fold]]) - 1,
-                                                                robust = TRUE,
-                                                                compute_coef = FALSE)$selections
-    initial_split_array[,, fold] <- matrix(0, nrow = p, ncol = n_models)
-    for(model_id in 1:n_models)
-      initial_split_array[initial_selections_fold[[model_id]], model_id, fold] <- 1
+    for(fold in 1:n_folds){
+      
+      # Initial split of predictors
+      initial_selections_fold <- srlars::srlars(x[cpp_folds[[fold]],], y[cpp_folds[[fold]]], 
+                                                n_models = n_models,
+                                                model_saturation = "fixed",
+                                                model_size = min(length(cpp_folds[[fold]]) - 1, floor(p/n_models)),
+                                                robust = TRUE,
+                                                compute_coef = FALSE)$selections
+      initial_split_array[,, fold] <- matrix(0, nrow = p, ncol = n_models)
+      for(model_id in 1:n_models)
+        initial_split_array[initial_selections_fold[[model_id]], model_id, fold] <- 1
+    }
+    
+  } else if(initial_estimator == "robStepSplitReg"){
+    
+    for(fold in 1:n_folds){
+      
+      # Initial split of predictors
+      initial_selections_fold <- robStepSplitReg::robStepSplitReg(x[cpp_folds[[fold]],], y[cpp_folds[[fold]]], 
+                                                                  n_models = n_models,
+                                                                  model_saturation = "fixed",
+                                                                  model_size = min(length(cpp_folds[[fold]]) - 1, floor(p/n_models)),
+                                                                  robust = TRUE,
+                                                                  compute_coef = FALSE)$selections
+      initial_split_array[,, fold] <- matrix(0, nrow = p, ncol = n_models)
+      for(model_id in 1:n_models)
+        initial_split_array[initial_selections_fold[[model_id]], model_id, fold] <- 1
+    }
   }
   
   # CPP parameter for neighborhood search
   neighborhood_search_cpp <- as.numeric(neighborhood_search)
+  
+  # CPP parameeter for CV criterion
+  cv_criterion_cpp <- ifelse(cv_criterion == "tau", 0, 1)
   
   # Invoking the CPP code for RMSS
   output <- RInterfaceCV(x, y,
@@ -187,6 +228,7 @@ cv.RMSS <- function(x, y,
                          neighborhood_search_cpp,
                          neighborhood_search_tolerance,
                          n_folds,
+                         cv_criterion_cpp,
                          alpha,
                          gamma,
                          n_threads)
@@ -194,9 +236,6 @@ cv.RMSS <- function(x, y,
   # Formatting the list of output
   for(h_ind in 1:length(h_grid)){
     for(t_ind in 1:length(t_grid)){
-      
-      output$cv_error[[h_ind]][[t_ind]] <- as.list(output$cv_error[[h_ind]][[t_ind]])
-      
       for(u_ind in 1:length(u_grid)){
         
         output$active_samples[[h_ind]][[t_ind]][[u_ind]] <- matrix(output$active_samples[[h_ind]][[t_ind]][[u_ind]], ncol = n_models, byrow = FALSE)[order(random.permutation),]
@@ -205,12 +244,28 @@ cv.RMSS <- function(x, y,
     }
   }
   
-  # Formatting CV error
-  cv_error <- lapply(1:n_models, function(t) return(matrix(NA, nrow = length(h_grid), ncol = length(t_grid))))
-  for(h_ind in 1:length(h_grid))
-    for(t_ind in 1:length(t_grid))
-      for(u_ind in 1:length(u_grid))
-        cv_error[[u_ind]][h_ind, t_ind] <- output$cv_error[[h_ind]][[t_ind]][[u_ind]]
+  # Computing CV error
+  cv_error <- list()
+  if(cv_criterion == "tau"){
+    
+    for(u_ind in 1:length(u_grid)){
+      
+      cv_error[[u_ind]] <- matrix(NA, nrow = length(h_grid), ncol = length(t_grid))
+      for(h_ind in 1:length(h_grid))
+        for(t_ind in 1:length(t_grid))
+          cv_error[[u_ind]][h_ind, t_ind] <- robustbase::scaleTau2(sqrt(output$prediction_residuals[[h_ind]][[t_ind]][[u_ind]]),
+                                                                   mu.too = TRUE)[1]
+    }
+  } else if(cv_criterion == "trimmed"){
+    
+    for(u_ind in 1:length(u_grid)){
+      
+      cv_error[[u_ind]] <- matrix(NA, nrow = length(h_grid), ncol = length(t_grid))
+      for(h_ind in 1:length(h_grid))
+        for(t_ind in 1:length(t_grid))
+          cv_error[[u_ind]][h_ind, t_ind] <- mean(output$prediction_residuals[[h_ind]][[t_ind]][[u_ind]])
+    }
+  }
   output$cv_error <- cv_error
   
   # Optimal parameters (RMSS)

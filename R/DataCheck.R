@@ -4,6 +4,7 @@
 DataCheck <- function(x, y,
                       n_models,
                       h_grid, t_grid, u_grid,
+                      initial_estimator,
                       tolerance,
                       max_iter,
                       neighborhood_search,
@@ -68,6 +69,10 @@ DataCheck <- function(x, y,
     }
   }
   
+  # Check input for initial estimator 
+  if(!(initial_estimator %in% c("srlars", "robStepSplitReg")))
+    stop("initial_estimator should be one of \"srlars\" or \"robStepSplitReg\".")
+  
   # Checking input for the tolerance parameter
   if(!is.null(tolerance))
     if (!inherits(tolerance, "numeric")) {
@@ -104,11 +109,13 @@ DataCheck <- function(x, y,
 DataCheckCV <- function(x, y,
                         n_models,
                         h_grid, t_grid, u_grid,
+                        initial_estimator,
                         tolerance,
                         max_iter,
                         neighborhood_search,
                         neighborhood_search_tolerance,
                         n_folds,
+                        cv_criterion,
                         alpha,
                         gamma, 
                         n_threads){
@@ -172,6 +179,10 @@ DataCheckCV <- function(x, y,
     }
   }
   
+  # Check input for initial estimator 
+  if(!(initial_estimator %in% c("srlars", "robStepSplitReg")))
+    stop("initial_estimator should be one of \"srlars\" or \"robStepSplitReg\".")
+  
   # Checking input for the tolerance parameter
   if(!is.null(tolerance))
     if (!inherits(tolerance, "numeric")) {
@@ -207,6 +218,10 @@ DataCheckCV <- function(x, y,
   } else if(any(!n_folds == floor(n_folds), n_folds <= 0)) {
     stop("n_folds should be a positive integer")
   }
+  
+  # Check CV criterion parameter
+  if(!(cv_criterion %in% c("tau", "trimmed")))
+    stop("cv_criterion should be one of \"tau\" or \"trimmed\".")
   
   # Check alpha value
   if(!inherits(alpha, "numeric")) {

@@ -14,6 +14,7 @@
 #' @param h_grid Grid for robustness parameter.
 #' @param t_grid Grid for sparsity parameter.
 #' @param u_grid Grid for diversity parameter.
+#' @param initial_estimator Method used for initial estimator. Must be one of "srlars" (default) or "robStepSplitReg".
 #' @param tolerance Tolerance level for convergence of PSBGD algorithm.
 #' @param max_iter Maximum number of iterations in PSBGD algorithm.
 #' @param neighborhood_search Neighborhood search to improve solution. Default is FALSE.
@@ -87,6 +88,7 @@
 #' rmss_fit <- RMSS(x = x_train, y = y_train,
 #'                  n_models = 3,
 #'                  h_grid = c(35), t_grid = c(6, 8, 10), u_grid = c(1:3),
+#'                  initial_estimator = "srlars",
 #'                  tolerance = 1e-1,
 #'                  max_iter = 1e3,
 #'                  neighborhood_search = FALSE,
@@ -105,6 +107,7 @@
 RMSS <- function(x, y,
                  n_models,
                  h_grid, t_grid, u_grid,
+                 initial_estimator = c("srlars", "robStepSplitReg")[1],
                  tolerance = 1e-1,
                  max_iter = 1e3,
                  neighborhood_search = FALSE,
@@ -114,6 +117,7 @@ RMSS <- function(x, y,
   DataCheck(x, y,
             n_models,
             h_grid, t_grid, u_grid,
+            initial_estimator,
             tolerance,
             max_iter,
             neighborhood_search,
@@ -127,12 +131,24 @@ RMSS <- function(x, y,
   y <- y[random.permutation]
   
   # Initial split of predictors
-  initial_selections <- robStepSplitReg::robStepSplitReg(x, y, 
-                                                         n_models = n_models,
-                                                         model_saturation = "fixed",
-                                                         model_size = n - 1,
-                                                         robust = TRUE,
-                                                         compute_coef = FALSE)$selections
+  if(initial_estimator == "srlars"){
+    
+    initial_selections <- srlars::srlars(x, y,
+                                         n_models = n_models,
+                                         model_saturation = "fixed",
+                                         model_size = min(n - 1, floor(p/n_models)),
+                                         robust = TRUE,
+                                         compute_coef = FALSE)$selections
+    
+  } else if(initial_estimator == "robStepSplitReg"){
+    
+    initial_selections <- robStepSplitReg::robStepSplitReg(x, y, 
+                                                           n_models = n_models,
+                                                           model_saturation = "fixed",
+                                                           model_size = min(n - 1, floor(p/n_models)),
+                                                           robust = TRUE,
+                                                           compute_coef = FALSE)$selections
+  }
   initial_split <- matrix(0, nrow = p, ncol = n_models)
   for(model_id in 1:n_models)
     initial_split[initial_selections[[model_id]], model_id] <- 1
