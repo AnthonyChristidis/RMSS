@@ -11,7 +11,7 @@ cv.RMSS(
   h_grid,
   t_grid,
   u_grid,
-  initial_estimator = c("srlars", "robStepSplitReg")[1],
+  initial_estimator = c("robStepSplitReg", "srlars")[1],
   tolerance = 0.1,
   max_iter = 1000,
   neighborhood_search = FALSE,
@@ -36,7 +36,7 @@ cv.RMSS(
 
 \item{u_grid}{Grid for diversity parameter.}
 
-\item{initial_estimator}{Method used for initial estimator. Must be one of "srlars" (default) or "robStepSplitReg".}
+\item{initial_estimator}{Method used for initial estimator. Must be one of "robStepSplitReg" (default) or "srlars".}
 
 \item{tolerance}{Tolerance level for convergence of PSBGD algorithm.}
 
@@ -122,7 +122,7 @@ for(cont_id in contamination_indices){
 rmss_fit <- cv.RMSS(x = x_train, y = y_train,
                     n_models = 3,
                     h_grid = c(35), t_grid = c(6, 8, 10), u_grid = c(1:3),
-                    initial_estimator = "srlars",
+                    initial_estimator = "robStepSplitReg",
                     tolerance = 1e-1,
                     max_iter = 1e3,
                     neighborhood_search = FALSE,
