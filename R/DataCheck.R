@@ -46,8 +46,8 @@ DataCheck <- function(x, y,
   if(!is.null(h_grid)){
     if (!inherits(h_grid, c("numeric", "integer"))) {
       stop("h_grid should be numeric or an integer vector.")
-    } else if (any(!(h_grid == floor(h_grid)), h_grid < 1, h_grid >= nrow(x))) {
-      stop("h_grid should be a positive integer less than the sample size.")
+    } else if (any(!(h_grid == floor(h_grid)), h_grid < 1, h_grid > nrow(x))) {
+      stop("h_grid should be a positive integer no larger than the sample size.")
     }
   }
   
@@ -156,8 +156,8 @@ DataCheckCV <- function(x, y,
   if(!is.null(h_grid)){
     if (!inherits(h_grid, c("numeric", "integer"))) {
       stop("h_grid should be numeric or an integer vector.")
-    } else if (any(!(h_grid == floor(h_grid)), h_grid < 1, h_grid >= nrow(x))) {
-      stop("h_grid should be a positive integer less than the sample size.")
+    } else if (any(!(h_grid == floor(h_grid)), h_grid < 1, h_grid > nrow(x))) {
+      stop("h_grid should be a positive integer no larger than the sample size.")
     }
   }
   
