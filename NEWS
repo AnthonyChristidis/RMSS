@@ -5,3 +5,6 @@
 * Add tau estimator as a method for the cross-validation procedure.
 * Add split robust least-angle regression as a method for the initial estimator.
 * Fix dimension error for initial estimator.
+
+# RMSS 1.1.1
+* Change badges for README file.
