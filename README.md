@@ -1,6 +1,6 @@
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/RMSS)](https://cran.r-project.org/package=RMSS)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/RMSS)](https://cran.r-project.org/package=RMSS)
 [![CRAN Data](https://www.r-pkg.org/badges/last-release/RMSS)](https://cran.r-project.org/package=RMSS) 
-[![Downloads](http://cranlogs.r-pkg.org/badges/RMSS)](https://cran.r-project.org/package=RMSS)
+[![Downloads](https://cranlogs.r-pkg.org/badges/RMSS)](https://cran.r-project.org/package=RMSS)
 
 RMSS
 =====
