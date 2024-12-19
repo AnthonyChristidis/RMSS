@@ -8,3 +8,6 @@
 
 # RMSS 1.1.1
 * Change badges for README file.
+
+# RMSS 1.1.2
+* Update the computation of the CV error for each combination of the tuning parameters.

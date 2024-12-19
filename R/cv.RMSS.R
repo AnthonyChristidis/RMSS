@@ -202,7 +202,8 @@ cv.RMSS <- function(x, y,
       initial_selections_fold <- robStepSplitReg::robStepSplitReg(x[cpp_folds[[fold]],], y[cpp_folds[[fold]]], 
                                                                   n_models = n_models,
                                                                   model_saturation = "fixed",
-                                                                  model_size = min(length(cpp_folds[[fold]]) - 1, floor(p/n_models)),
+                                                                  model_size = min(length(cpp_folds[[fold]]) - 1, 
+                                                                                   floor(p/n_models)),
                                                                   robust = TRUE,
                                                                   compute_coef = FALSE)$selections
       initial_split_array[,, fold] <- matrix(0, nrow = p, ncol = n_models)
@@ -252,9 +253,11 @@ cv.RMSS <- function(x, y,
       
       cv_error[[u_ind]] <- matrix(NA, nrow = length(h_grid), ncol = length(t_grid))
       for(h_ind in 1:length(h_grid))
-        for(t_ind in 1:length(t_grid))
-          cv_error[[u_ind]][h_ind, t_ind] <- robustbase::scaleTau2(sqrt(output$prediction_residuals[[h_ind]][[t_ind]][[u_ind]]),
-                                                                   mu.too = TRUE)[1]
+        for(t_ind in 1:length(t_grid)){
+            rob_estimates <- robustbase::scaleTau2(sqrt(output$prediction_residuals[[h_ind]][[t_ind]][[u_ind]]),
+                                                   mu.too = TRUE)
+            cv_error[[u_ind]][h_ind, t_ind] <- (rob_estimates[1])^2 + rob_estimates[2]
+      }
     }
   } else if(cv_criterion == "trimmed"){
     
