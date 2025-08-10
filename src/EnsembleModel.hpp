@@ -1,13 +1,13 @@
 /*
-* ===========================================================
-* File Type: HPP
-* File Name: EnsembleModel.hpp
-* Package Name: RMSS
-*
-* Created by Anthony-A. Christidis.
-* Copyright (c) Anthony-A. Christidis. All rights reserved.
-* ===========================================================
-*/
+ * ===========================================================
+ * File Type: HPP
+ * File Name: EnsembleModel.hpp
+ * Package Name: RMSS
+ *
+ * Created by Anthony-A. Christidis.
+ * Copyright (c) Anthony-A. Christidis. All rights reserved.
+ * ===========================================================
+ */
 
 #ifndef EnsembleModel_hpp
 #define EnsembleModel_hpp
@@ -40,16 +40,29 @@ private:
   arma::umat active_samples, active_samples_candidate;
   arma::uvec subset_active;
   arma::uvec subset_active_samples;
-  arma::uvec group_vec;
+  arma::uvec group_vec; 
   arma::mat final_coef, final_coef_candidate;
   arma::vec final_intercept, final_intercept_candidate;
   arma::vec models_loss, models_loss_candidate;
   double ensemble_loss, ensemble_loss_candidate;
   
+  // NEW: Cache variables for optimization
+  arma::uvec row_sums_subset, row_sums_subset_candidate;
+  std::vector<double> cached_step_sizes;
+  std::vector<arma::uvec> cached_subspaces;
+  std::vector<bool> subspace_cache_valid;
+  bool row_sums_cache_valid, row_sums_candidate_cache_valid;
+  
+  // NEW: Cache management functions
+  void invalidate_cache();
+  void invalidate_candidate_cache();
+  void update_row_sums_cache();
+  void update_row_sums_candidate_cache();
+  
   // (+) Functions that update the current state of the ensemble  
   void Compute_Coef(arma::uword& group), Compute_Coef_Candidate(arma::uword& group);
-  void Project_Coef(arma::vec& coef_vector, arma::uvec& sort_order_coef);
-  void Project_Trim(arma::vec& trim_vector, arma::uvec& sort_order_trim);
+  void Project_Coef(arma::vec& coef_vector);
+  void Project_Trim(arma::vec& trim_vector);
   double Compute_Group_Loss(arma::mat& x, arma::vec& y, arma::vec& betas, arma::vec& trim);
   void Update_Subset_Indices(arma::uword& group), Update_Subset_Indices_Candidate(arma::uword& group);
   void Update_Active_Samples(arma::uword& group, arma::vec& new_trim), Update_Active_Samples_Candidate(arma::uword& group, arma::vec& new_trim);
@@ -90,7 +103,8 @@ public:
   arma::mat Get_Final_Coef();
   double Get_Ensemble_Loss();
   arma::vec Prediction_Residuals_Ensemble(arma::mat& x_test, arma::vec& y_test);
-  arma::vec Prediction_Residuals_Models(arma::mat& x_test, arma::vec& y_test);
+  arma::vec Prediction_Square_Residuals_Ensemble(arma::mat& x_test, arma::vec& y_test);
+  arma::vec Prediction_Square_Residuals_Models(arma::mat& x_test, arma::vec& y_test);
 };
 
 #endif // EnsembleModel_hpp

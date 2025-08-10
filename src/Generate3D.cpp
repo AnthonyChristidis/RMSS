@@ -57,35 +57,25 @@ std::vector<std::vector<std::vector<arma::mat>>> Generate3D_Coefficients(std::ve
                                                                          arma::uvec& h, arma::uvec& t, arma::uvec& u,
                                                                          arma::uword& p, arma::uword& n_models) {
   
-  // Matrix for coefficients
-  arma::mat coef_matrix = arma::mat(p, n_models);
-  
-  // Creation of 3D vector for coefficients
+  // Pre-allocate entire 3D structure
   std::vector<std::vector<std::vector<arma::mat>>> coef3D;
+  coef3D.reserve(h.size());
   
-  // Allocation of the coefficients
   for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
-    
-    // 2D vector for a fixed trimming value
     std::vector<std::vector<arma::mat>> coef3D_h;
+    coef3D_h.reserve(t.size());
     
     for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
-      
-      // 1D vector for a fixed sparsity value
       std::vector<arma::mat> coef3D_t;
+      coef3D_t.reserve(u.size());
       
       for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
-        
-        coef_matrix = ensembles[h_ind][t_ind][u_ind].Get_Final_Coef();
-        coef3D_t.push_back(coef_matrix);
+        // Direct move, avoid copy
+        coef3D_t.emplace_back(std::move(ensembles[h_ind][t_ind][u_ind].Get_Final_Coef()));
       }
-      
-      // Adding the 1D vector to the 2D vector of ensembles for a fixed trimming value
-      coef3D_h.push_back(coef3D_t);
+      coef3D_h.emplace_back(std::move(coef3D_t));
     }
-    
-    // Adding the 2D vector to the 3D vector of ensembles
-    coef3D.push_back(coef3D_h);
+    coef3D.emplace_back(std::move(coef3D_h));
   }
   
   return coef3D;

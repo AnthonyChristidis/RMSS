@@ -17,7 +17,8 @@
 #' @param n_folds Number of folds for cross-validation procedure. Default is 5.
 #' @param cv_criterion Criterion to use for cross-validation procedure. Must be one of "tau" (default) or "trimmed".
 #' @param alpha Proportion of trimmed samples for cross-validation procedure. Default is 1/4.
-#' @param gamma Weight parameter for ensemble MSPE (gamma) and average MSPE of individual models (1 - gamma). Default is 1.
+#' @param gamma Weight parameter for ensemble MSPE (gamma) and average MSPE of individual models (1 - gamma). 
+#'              Only used if "cv_criterion" is set to "trimmed". Default is 1.
 #' @param n_threads Number of threads used by OpenMP for multithreading over the folds. Default is 1.
 #'  
 #' @return An object of class cv.RMSS
@@ -254,7 +255,7 @@ cv.RMSS <- function(x, y,
       cv_error[[u_ind]] <- matrix(NA, nrow = length(h_grid), ncol = length(t_grid))
       for(h_ind in 1:length(h_grid))
         for(t_ind in 1:length(t_grid)){
-            rob_estimates <- robustbase::scaleTau2(sqrt(output$prediction_residuals[[h_ind]][[t_ind]][[u_ind]]),
+            rob_estimates <- robustbase::scaleTau2(output$prediction_residuals[[h_ind]][[t_ind]][[u_ind]],
                                                    mu.too = TRUE)
             cv_error[[u_ind]][h_ind, t_ind] <- (rob_estimates[1])^2 + rob_estimates[2]
       }

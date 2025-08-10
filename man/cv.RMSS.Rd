@@ -52,7 +52,8 @@ cv.RMSS(
 
 \item{alpha}{Proportion of trimmed samples for cross-validation procedure. Default is 1/4.}
 
-\item{gamma}{Weight parameter for ensemble MSPE (gamma) and average MSPE of individual models (1 - gamma). Default is 1.}
+\item{gamma}{Weight parameter for ensemble MSPE (gamma) and average MSPE of individual models (1 - gamma). 
+Only used if "cv_criterion" is set to "trimmed". Default is 1.}
 
 \item{n_threads}{Number of threads used by OpenMP for multithreading over the folds. Default is 1.}
 }

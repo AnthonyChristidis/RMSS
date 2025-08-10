@@ -1,164 +1,115 @@
 /*
-* ===========================================================
-* File Type: HPP
-* File Name: NeighborhoodSearch.cpp
-* Package Name: RMSS
-*
-* Created by Anthony-A. Christidis.
-* Copyright (c) Anthony-A. Christidis. All rights reserved.
-* ===========================================================
-*/
+ * ===========================================================
+ * File Type: CPP
+ * File Name: NeighborhoodSearch.cpp
+ * Package Name: RMSS
+ *
+ * Created by Anthony-A. Christidis.
+ * Copyright (c) Anthony-A. Christidis. All rights reserved.
+ * ===========================================================
+ */
 
 // Header files included
 #include "NeighborhoodSearch.hpp"
 
 void NeighborhoodSearch(std::vector<std::vector<std::vector<EnsembleModel>>>& ensembles,
-    arma::uvec& h, arma::uvec& t, arma::uvec& u,
-    arma::uword& p, arma::uword& n_models,
-    double& neighborhood_search_tolerance) {
-
-    // Matrix to store candidate indices
-    arma::umat candidate_mat = arma::umat(p, n_models);
-
-    // Ensemble losses over all configurations of tuning parameters
-    double total_loss_old = 0, total_loss_new = 0;
-    for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++)
-        for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++)
-            for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++)
-                total_loss_new += ensembles[h_ind][t_ind][u_ind].Get_Ensemble_Loss();
-
-    // Cycles for neighborhood searches
-    do {
-
-        // Setting old total loss
-        total_loss_old = total_loss_new;
-
-        //___________________________________________
-        // Neighborhood search for non-extreme cases
-        //___________________________________________
-
-        // Neighbors for trimming parameter
-        for (arma::uword h_ind = 1; h_ind < h.size() - 1; h_ind++) {
-            for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
-                for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
-
-                    // LHS Neighbor
-                    candidate_mat = ensembles[h_ind - 1][t_ind][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u_ind].Candidate_Search();
-
-                    // RHS Neighbor
-                    candidate_mat = ensembles[h_ind + 1][t_ind][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u_ind].Candidate_Search();
-                }
-            }
+                        arma::uvec& h, arma::uvec& t, arma::uvec& u,
+                        arma::uword& p, arma::uword& n_models,
+                        double& neighborhood_search_tolerance) {
+  
+  // Pre-compute initial total loss
+  double total_loss_old = 0;
+  std::vector<std::vector<std::vector<double>>> cached_losses(h.size(),
+                                                              std::vector<std::vector<double>>(t.size(), std::vector<double>(u.size())));
+  
+  for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
+    for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
+      for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
+        cached_losses[h_ind][t_ind][u_ind] = ensembles[h_ind][t_ind][u_ind].Get_Ensemble_Loss();
+        total_loss_old += cached_losses[h_ind][t_ind][u_ind];
+      }
+    }
+  }
+  
+  // Track which configurations changed this iteration
+  std::vector<std::vector<std::vector<bool>>> changed(h.size(),
+                                                      std::vector<std::vector<bool>>(t.size(), std::vector<bool>(u.size(), false)));
+  
+  // Neighborhood search iterations
+  do {
+    double total_loss_new = 0;
+    std::fill(changed.begin(), changed.end(), 
+              std::vector<std::vector<bool>>(t.size(), std::vector<bool>(u.size(), false)));
+    
+    // Helper lambda to try a neighbor and track changes
+    auto try_neighbor = [&](arma::uword h_curr, arma::uword t_curr, arma::uword u_curr,
+                            arma::uword h_neighbor, arma::uword t_neighbor, arma::uword u_neighbor) {
+      double old_loss = ensembles[h_curr][t_curr][u_curr].Get_Ensemble_Loss();
+      
+      // Try the neighbor configuration
+      arma::umat candidate_mat = ensembles[h_neighbor][t_neighbor][u_neighbor].Get_Model_Subspace_Ensemble();
+      ensembles[h_curr][t_curr][u_curr].Set_Indices_Candidate(candidate_mat);
+      ensembles[h_curr][t_curr][u_curr].Candidate_Search();
+      
+      double new_loss = ensembles[h_curr][t_curr][u_curr].Get_Ensemble_Loss();
+      
+      // Track if this configuration improved
+      if (std::abs(new_loss - old_loss) > 1e-10) {
+        changed[h_curr][t_curr][u_curr] = true;
+        cached_losses[h_curr][t_curr][u_curr] = new_loss;
+      }
+    };
+    
+    //___________________________________________
+    // Consolidated neighborhood search
+    //___________________________________________
+    
+    for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
+      for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
+        for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
+          
+          // Check h-dimension neighbors
+          if (h_ind > 0) {
+            try_neighbor(h_ind, t_ind, u_ind, h_ind - 1, t_ind, u_ind);
+          }
+          if (h_ind < h.size() - 1) {
+            try_neighbor(h_ind, t_ind, u_ind, h_ind + 1, t_ind, u_ind);
+          }
+          
+          // Check t-dimension neighbors  
+          if (t_ind > 0) {
+            try_neighbor(h_ind, t_ind, u_ind, h_ind, t_ind - 1, u_ind);
+          }
+          if (t_ind < t.size() - 1) {
+            try_neighbor(h_ind, t_ind, u_ind, h_ind, t_ind + 1, u_ind);
+          }
+          
+          // Check u-dimension neighbors
+          if (u_ind > 0) {
+            try_neighbor(h_ind, t_ind, u_ind, h_ind, t_ind, u_ind - 1);
+          }
+          if (u_ind < u.size() - 1) {
+            try_neighbor(h_ind, t_ind, u_ind, h_ind, t_ind, u_ind + 1);
+          }
         }
-
-        // Neighbors of sparsity parameter
-        for (arma::uword t_ind = 1; t_ind < t.size() - 1; t_ind++) {
-            for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
-                for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
-
-                    // LHS Neighbor
-                    candidate_mat = ensembles[h_ind][t_ind - 1][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u_ind].Candidate_Search();
-
-                    // RHS Neighbor
-                    candidate_mat = ensembles[h_ind][t_ind + 1][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u_ind].Candidate_Search();
-                }
-            }
+      }
+    }
+    
+    // Compute new total loss using cached values
+    for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
+      for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
+        for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
+          total_loss_new += cached_losses[h_ind][t_ind][u_ind];
         }
-
-        // Neighbors of diversity parameter
-        for (arma::uword u_ind = 1; u_ind < u.size() - 1; u_ind++) {
-            for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
-                for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
-
-                    // LHS Neighbor
-                    candidate_mat = ensembles[h_ind][t_ind][u_ind - 1].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u_ind].Candidate_Search();
-
-                    // RHS Neighbor
-                    candidate_mat = ensembles[h_ind][t_ind][u_ind + 1].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u_ind].Candidate_Search();
-                }
-            }
-        }
-
-        //_______________________________________
-        // Neighborhood search for extreme cases
-        //_______________________________________
-
-        // Neighbors for trimming parameter
-        if (h.size() > 1) {
-
-            for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
-                for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
-
-                    // LHS Extreme
-                    candidate_mat = ensembles[1][t_ind][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[0][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[0][t_ind][u_ind].Candidate_Search();
-
-                    // RHS Extreme
-                    candidate_mat = ensembles[h.size() - 2][t_ind][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h.size() - 1][t_ind][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h.size() - 1][t_ind][u_ind].Candidate_Search();
-                }
-            }
-        }
-
-        // Neighbors of sparsity parameter
-        if (t.size() > 1) {
-
-            for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
-                for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++) {
-
-                    // LHS Extreme
-                    candidate_mat = ensembles[h_ind][1][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][0][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][0][u_ind].Candidate_Search();
-
-                    // RHS Extreme
-                    candidate_mat = ensembles[h_ind][t.size() - 2][u_ind].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t.size() - 1][u_ind].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t.size() - 1][u_ind].Candidate_Search();
-                }
-            }
-        }
-
-        // Neighbors of diversity parameter
-        if (u.size() > 1) {
-
-            for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++) {
-                for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++) {
-
-                    // LHS Extreme
-                    candidate_mat = ensembles[h_ind][t_ind][1].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][0].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][0].Candidate_Search();
-
-                    // RHS Extreme
-                    candidate_mat = ensembles[h_ind][t_ind][u.size() - 2].Get_Model_Subspace_Ensemble();
-                    ensembles[h_ind][t_ind][u.size() - 1].Set_Indices_Candidate(candidate_mat);
-                    ensembles[h_ind][t_ind][u.size() - 1].Candidate_Search();
-                }
-            }
-        }
-
-        // Ensemble losses over all configurations of tuning parameters
-        total_loss_new = 0;
-        for (arma::uword h_ind = 0; h_ind < h.size(); h_ind++)
-            for (arma::uword t_ind = 0; t_ind < t.size(); t_ind++)
-                for (arma::uword u_ind = 0; u_ind < u.size(); u_ind++)
-                    total_loss_new += ensembles[h_ind][t_ind][u_ind].Get_Ensemble_Loss();
-
-    } while (!(std::abs(total_loss_new - total_loss_old) < neighborhood_search_tolerance));
+      }
+    }
+    
+    // Check for convergence
+    if (std::abs(total_loss_new - total_loss_old) < neighborhood_search_tolerance) {
+      break;
+    }
+    
+    total_loss_old = total_loss_new;
+    
+  } while (true);
 }
-
