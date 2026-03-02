@@ -158,7 +158,7 @@ void EnsembleModel::Compute_Coef(arma::uword& group) {
     try {
       arma::vec eigenvals = arma::eig_sym(XtX);
       double max_eig = arma::max(eigenvals);
-      if (max_eig > 1e-12 && arma::is_finite(max_eig)) {
+      if (max_eig > 1e-12 && std::isfinite(max_eig)) {
         cached_step_sizes[group] = 1.0 / max_eig;
         step_size_computed = true;
       }
@@ -173,7 +173,7 @@ void EnsembleModel::Compute_Coef(arma::uword& group) {
         XtX_reg.diag() += 1e-8;
         arma::vec eigenvals = arma::eig_sym(XtX_reg);
         double max_eig = arma::max(eigenvals);
-        if (max_eig > 1e-12 && arma::is_finite(max_eig)) {
+        if (max_eig > 1e-12 && std::isfinite(max_eig)) {
           cached_step_sizes[group] = 1.0 / max_eig;
           step_size_computed = true;
         }
@@ -188,7 +188,7 @@ void EnsembleModel::Compute_Coef(arma::uword& group) {
         arma::vec singular_values;
         bool svd_success = arma::svd(singular_values, XtX);
         if (svd_success && singular_values.n_elem > 0 && 
-            singular_values(0) > 1e-12 && arma::is_finite(singular_values(0))) {
+            singular_values(0) > 1e-12 && std::isfinite(singular_values(0))) {
           cached_step_sizes[group] = 1.0 / singular_values(0);
           step_size_computed = true;
         }
@@ -201,7 +201,7 @@ void EnsembleModel::Compute_Coef(arma::uword& group) {
     if (!step_size_computed) {
       try {
         double trace_val = arma::trace(XtX);
-        if (trace_val > 1e-12 && arma::is_finite(trace_val) && XtX.n_rows > 0) {
+        if (trace_val > 1e-12 && std::isfinite(trace_val) && XtX.n_rows > 0) {
           double avg_eigenval = trace_val / XtX.n_rows;
           cached_step_sizes[group] = 1.0 / avg_eigenval;
           step_size_computed = true;
@@ -214,7 +214,6 @@ void EnsembleModel::Compute_Coef(arma::uword& group) {
     // Method 5: Ultimate conservative fallback
     if (!step_size_computed) {
       cached_step_sizes[group] = 1e-15;  // Very conservative step size
-      std::cout << "Preset step size! \n";
     }
     
     subspace_cache_valid[group] = true;
@@ -297,7 +296,7 @@ void EnsembleModel::Compute_Coef_Candidate(arma::uword& group) {
   try {
     arma::vec eigenvals = arma::eig_sym(XtX);
     double max_eig = arma::max(eigenvals);
-    if (max_eig > 1e-12 && arma::is_finite(max_eig)) {
+    if (max_eig > 1e-12 && std::isfinite(max_eig)) {
       step_size_coef = 1.0 / max_eig;
       step_size_computed = true;
     }
@@ -312,7 +311,7 @@ void EnsembleModel::Compute_Coef_Candidate(arma::uword& group) {
       XtX_reg.diag() += 1e-8;
       arma::vec eigenvals = arma::eig_sym(XtX_reg);
       double max_eig = arma::max(eigenvals);
-      if (max_eig > 1e-12 && arma::is_finite(max_eig)) {
+      if (max_eig > 1e-12 && std::isfinite(max_eig)) {
         step_size_coef = 1.0 / max_eig;
         step_size_computed = true;
       }
@@ -327,7 +326,7 @@ void EnsembleModel::Compute_Coef_Candidate(arma::uword& group) {
       arma::vec singular_values;
       bool svd_success = arma::svd(singular_values, XtX);
       if (svd_success && singular_values.n_elem > 0 && 
-          singular_values(0) > 1e-12 && arma::is_finite(singular_values(0))) {
+          singular_values(0) > 1e-12 && std::isfinite(singular_values(0))) {
         step_size_coef = 1.0 / singular_values(0);
         step_size_computed = true;
       }
@@ -340,7 +339,7 @@ void EnsembleModel::Compute_Coef_Candidate(arma::uword& group) {
   if (!step_size_computed) {
     try {
       double trace_val = arma::trace(XtX);
-      if (trace_val > 1e-12 && arma::is_finite(trace_val) && XtX.n_rows > 0) {
+      if (trace_val > 1e-12 && std::isfinite(trace_val) && XtX.n_rows > 0) {
         double avg_eigenval = trace_val / XtX.n_rows;
         step_size_coef = 1.0 / avg_eigenval;
         step_size_computed = true;

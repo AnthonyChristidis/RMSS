@@ -18,3 +18,12 @@
 # RMSS 1.2.1
 * Better handling of near-singular matrices in C++ code.
 * The tau scale estimator for parameter selection is now done on the prediction residuals, not the absolute value of the prediction residuals.
+
+# RMSS 1.2.2
+* Remove the deprecated call to arma::is_finite() and replace it with std::isfinite().
+
+# RMSS 1.2.3
+* Removed deprecated `-D__STDC_LIMIT_MACROS` from makevars.in and makevars.win scripts.
+
+# RMSS 1.2.4
+* Update arguments for call to `srlars` function in `srlars` package.

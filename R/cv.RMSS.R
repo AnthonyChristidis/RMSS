@@ -154,10 +154,10 @@ cv.RMSS <- function(x, y,
     
     initial_selections <- srlars::srlars(x, y,
                                          n_models = n_models,
-                                         model_saturation = "fixed",
-                                         model_size = min(n - 1, floor(p/n_models)),
+                                         tolerance = 0,
+                                         max_predictors = min(n - 1, floor(p/n_models)) * n_models,
                                          robust = TRUE,
-                                         compute_coef = FALSE)$selections
+                                         compute_coef = FALSE)$active.sets
     
   } else if(initial_estimator == "robStepSplitReg"){
     
